@@ -34,6 +34,7 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'cors'          => \App\Filters\CorsFilter::class,
     ];
 
     /**
@@ -69,15 +70,12 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            // 'honeypot',
-            // 'csrf',
-            // 'invalidchars',
+            'cors' => ['except' => '']
         ],
         'after' => [
-            // 'honeypot',
-            // 'secureheaders',
+            'cors' => ['except' => '']
         ],
-    ];
+    ];    
 
     /**
      * List of filter aliases that works on a
