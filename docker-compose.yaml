@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.5
+    container_name: MARIADB
+    hostname: local_mariadb
+    volumes:
+      - ./.docker/mariadb:/var/lib/mysql
+    restart: always
+    ports:
+      - 3306:3306
+    env_file:
+      - ./docker/config/mariadb.env
+    networks:
+      - test-picpay
+    
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: APP
+    volumes:
+      - ./:/var/www/html
+    restart: on-failure
+    ports:
+      - 8080:80 
+      - 13000:13000
+    depends_on:
+      - mariadb
+      - redis
+    networks:
+      - test-picpay
+  
+  redis:
+    image: redis
+    container_name: REDIS
+    restart: always
+    networks:
+      - test-picpay
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: '0.3GB'
+
+networks:
+  test-picpay:
+    driver: bridge

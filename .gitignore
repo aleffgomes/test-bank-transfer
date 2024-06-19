@@ -124,3 +124,7 @@ nb-configuration.xml
 
 /results/
 /phpunit*.xml
+
+# docker
+
+.docker/
