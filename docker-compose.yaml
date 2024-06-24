@@ -13,8 +13,8 @@ services:
     env_file:
       - ./docker/config/mariadb.env
     networks:
-      - test-picpay
-    
+      - app
+  
   app:
     build: 
       context: .
@@ -24,20 +24,20 @@ services:
       - ./:/var/www/html
     restart: on-failure
     ports:
-      - 8080:80 
+      - 80:80
       - 13000:13000
     depends_on:
       - mariadb
       - redis
     networks:
-      - test-picpay
+      - app
   
   redis:
     image: redis
     container_name: REDIS
     restart: always
     networks:
-      - test-picpay
+      - app
     deploy:
       resources:
         limits:
@@ -45,5 +45,5 @@ services:
           memory: '0.3GB'
 
 networks:
-  test-picpay:
+  app:
     driver: bridge

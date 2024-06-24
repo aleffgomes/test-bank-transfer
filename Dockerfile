@@ -45,12 +45,11 @@ COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 WORKDIR /var/www/html
 
-# criação de usuário para utilização do app
-RUN useradd -ms /bin/bash test-picpay
-RUN chown -R test-picpay:test-picpay /var/www/html
-USER test-picpay
-
 COPY . .
+
+# Configurar permissões
+RUN chown -R www-data:www-data /var/www/html/writable \
+    && chmod -R 775 /var/www/html/writable
 
 EXPOSE 80
 EXPOSE 8080

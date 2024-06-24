@@ -13,6 +13,7 @@ use CodeIgniter\Router\RouteCollection;
   */
 
   $routes->get('/ping', 'PingController::ping');
+  $routes->get('/', 'PingController::ping');
 
   $routesApiDirectory = APPPATH . 'Routes/V1';
   $routeFilesApi = scandir($routesApiDirectory);
