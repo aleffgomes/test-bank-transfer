@@ -70,12 +70,12 @@ php spark db:seed DatabaseSeeder
 
 O Redis já estará rodando como parte do ambiente Docker. Certifique-se de que a configuração no arquivo .env aponta para o host e porta corretos (redis e 6379)
 
-## Testes
+## Executando os Testes
 
-Para rodar os testes, entre no contêiner da aplicação e execute:
+Para executar os testes unitários, use o seguinte comando:
 
 ```bash
-./vendor/bin/phpunit
+vendor/bin/phpunit
 ```
 
 ## Documentação
