@@ -1,8 +1,8 @@
-version: '3.8'
+version: '3.3'
 
 services:
   mariadb:
-    image: mariadb:10.5
+    image: mariadb:latest
     container_name: MARIADB
     hostname: local_mariadb
     volumes:
@@ -10,8 +10,11 @@ services:
     restart: always
     ports:
       - 3306:3306
-    env_file:
-      - ./docker/config/mariadb.env
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: test_picpay
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
     networks:
       - app
   
