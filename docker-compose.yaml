@@ -1,12 +1,12 @@
 version: '3.3'
 
 services:
-  mariadb:
-    image: mariadb:latest
-    container_name: MARIADB
-    hostname: local_mariadb
+  mysql:
+    image: mysql:latest
+    container_name: MYSQL
+    hostname: mysql_local
     volumes:
-      - ./.docker/mariadb:/var/lib/mysql
+      - ./.docker/mysql:/var/lib/mysql
     restart: always
     ports:
       - 3306:3306
@@ -30,7 +30,7 @@ services:
       - 80:80
       - 13000:13000
     depends_on:
-      - mariadb
+      - mysql
       - redis
     networks:
       - app

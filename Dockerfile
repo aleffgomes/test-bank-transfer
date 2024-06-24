@@ -2,36 +2,28 @@ FROM php:8.1.2-apache
 
 ENV CFLAGS="$CFLAGS -D_GNU_SOURCE"
 
-# installing the PHP extensions/dependencies we need
+# PHP extensions/dependencies
 RUN apt-get update && apt-get install -y \
     libzip-dev \
-    libpng-dev \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \ 
-    libicu-dev \
-    libxml2-dev \
     libsodium-dev \
+    libicu-dev \
     curl \
     zip 
 
-RUN docker-php-ext-configure gd
-
 RUN docker-php-ext-install \
     zip \
-    gd \
     intl \
     mysqli \
-    soap \
     sodium \
     sockets 
 
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 RUN echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-# document root for apache
+# document root
 COPY docker/config/000-default.conf /etc/apache2/sites-available/000-default.conf
 
-# mod_rewrite for URL rewrite and mod_headers for .htaccess
+# mod_rewrite
 RUN a2enmod rewrite headers
 
 # composer
@@ -47,10 +39,12 @@ WORKDIR /var/www/html
 
 COPY . .
 
-# Configurar permissões
+# Permissions
 RUN chown -R www-data:www-data /var/www/html/writable \
     && chmod -R 775 /var/www/html/writable
 
 EXPOSE 80
 EXPOSE 8080
 EXPOSE 13000
+
+CMD ["php", "spark", "migrate"]
