@@ -46,5 +46,3 @@ RUN chown -R www-data:www-data /var/www/html/writable \
 EXPOSE 80
 EXPOSE 8080
 EXPOSE 13000
-
-CMD ["php", "spark", "migrate"]

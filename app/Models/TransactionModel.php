@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Interfaces\Models\TransactionModelInterface;
 
-class TransactionModel extends Model
+class TransactionModel extends Model implements TransactionModelInterface
 {
     protected $table = 'transactions';
     protected $primaryKey = 'id_transaction';
@@ -51,10 +52,24 @@ class TransactionModel extends Model
      */
     public function saveTransaction(int $payerId, int $payeeId, float $amount, int $statusId): int
     {
-        return $this->save([
+        return $this->insert([
             'payer_id' => $payerId,
             'payee_id' => $payeeId,
             'amount' => $amount,
+            'status_id' => $statusId
+        ]);
+    }
+
+    /**
+     * Update the status of a transaction.
+     *
+     * @param int $transactionId The ID of the transaction.
+     * @param int $statusId The ID of the transaction status.
+     * @return bool Whether the update was successful.
+     */
+    public function updateTransactionStatus(int $transactionId, int $statusId): bool
+    {
+        return $this->update($transactionId, [
             'status_id' => $statusId
         ]);
     }

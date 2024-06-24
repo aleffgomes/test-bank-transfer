@@ -19,28 +19,31 @@ class ResetDatabase extends BaseCommand
         CLI::write('Database reset completed.', 'green');
     }
 
-    protected function dropTables()
+    /**
+     * Drop all tables in the connected database.
+     *
+     * @return void
+     */
+    protected function dropTables(): void
     {
-        $db = \Config\Database::connect();
-        $builder = $db->table('information_schema.tables');
+        $database = \Config\Database::connect();
+        $query = $database->table('information_schema.tables')
+            ->where('table_schema', $database->getDatabase())
+            ->get();
 
-        $tables = $builder->select('table_name')
-                         ->where('table_schema', $db->getDatabase())
-                         ->get()
-                         ->getResultArray();
-
-        foreach ($tables as $table) {
-            $tableName = $table['table_name'];
-            try {
-                $db->query("DROP TABLE IF EXISTS `$tableName`");
-                CLI::write("Dropped table: $tableName", 'yellow');
-            } catch (Exception $e) {
-                CLI::error("Error dropping table $tableName: " . $e->getMessage());
-            }
+        foreach ($query->getResultArray() as $row) {
+            $tableName = $row['TABLE_NAME'];
+            $database->simpleQuery("SET FOREIGN_KEY_CHECKS = 0");
+            $database->simpleQuery("DROP TABLE IF EXISTS `$tableName`");
         }
     }
 
-    protected function recreateTables()
+    /**
+     * Recreate all tables in the connected database.
+     *
+     * @return void
+     */
+    protected function recreateTables(): void
     {
         $migrate = \Config\Services::migrations();
         $migrate->setSilent(false);

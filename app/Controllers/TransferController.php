@@ -1,24 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
-use App\Models\UserModel;
-use App\Models\WalletModel;
-use App\Models\TransactionModel;
-use App\Models\TransactionStatusModel;
 use CodeIgniter\RESTful\ResourceController;
 use Exception;
+use Config\Services;
+use OpenApi\Attributes as OA;
+
+#[OA\Info(
+    version: '1.0.0',
+    title: 'App Transfer API',
+    attachables: [new OA\Attachable()]
+)]
 
 class TransferController extends ResourceController
 {
     protected $modelName = 'App\Models\TransactionModel';
     protected $format    = 'json';
 
-    /**
-     * Transfer money from one user to another.
-     *
-     * @return \CodeIgniter\HTTP\Response The response indicating success or failure.
-     */
+    protected $transferService;
+
+    public function __construct()
+    {
+        $this->transferService = Services::transferService();
+    }
+
+    // Documentation
+    #[OA\Post(path: '/transfer', summary: 'Transfer money from one user to another')]
+    #[OA\RequestBody(required: true, description: 'Transfer money from one user to another', content: new OA\JsonContent(
+        properties: [
+            new OA\Property(property: 'payer', type: 'integer', description: 'Payer user id'),
+            new OA\Property(property: 'payee', type: 'integer', description: 'Payee user id'),
+            new OA\Property(property: 'amount', type: 'number', format: 'float', description: 'Amount to transfer'),
+        ],
+        required: ['payer', 'payee', 'amount']
+    ))]
+
+    #[OA\Response(response: 200, description: 'Transfer money from one user to another')]
+    #[OA\Response(response: 400, description: 'Bad Request')]
+    #[OA\Response(response: 500, description: 'Internal Server Error')]
+    // End of documentation
+    
     public function transfer(): \CodeIgniter\HTTP\Response
     {
         $rules = [
@@ -35,81 +59,13 @@ class TransferController extends ResourceController
         $payeeId = $requestData['payee'];
         $amount = $requestData['amount'];
 
-        $userModel = new UserModel();
-        $walletModel = new WalletModel();
-        $transactionModel = new TransactionModel();
-        $TransactionStatusModel = new TransactionStatusModel();
-
-        $payer = $userModel->getUserById($payerId);
-        $payee = $userModel->getUserById($payeeId);
-
-        print_r($payer); exit;
-
-        if (!$payer || !$payee) return $this->failNotFound('Payer or Payee not found.');
-
-        $payerWallet = $walletModel->getPayerWallet($payerId);
-
-        if ($payerWallet['balance'] < $amount) return $this->fail('Insufficient balance.');
-
-        if ($payer['user_type_id'] == 2) return $this->fail('Merchants cannot send money.');
-
-        $db = \Config\Database::connect();
-        $db->transStart();
-
         try {
-            if (!$this->checkAuthorization()) throw new Exception('Authorization failed.');
+            $result = $this->transferService->transfer($payerId, $payeeId, $amount);
 
-            $walletModel->updatePayerWalletBalance($payerWallet, $amount);
-            $walletModel->updatePayeeWalletBalance($payeeId, $amount);
-
-            $statusId = $TransactionStatusModel->getStatusId('Pending');
-
-            $transactionModel->saveTransaction($payerId, $payeeId, $amount, $statusId);
-
-            $this->sendNotification((int) $payee['id_user'], 'Payment received.');
-
-            $db->transComplete();
+            return $this->respond(['messages' => $result, 'status' => $result['code']], $result['code']);
         } catch (Exception $e) {
-            $db->transRollback();
-            return $this->fail('Transaction failed: ' . $e->getMessage());
+            return $this->fail($e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine());
         }
-
-        if (!$db->transStatus()) {
-            return $this->fail('Transaction failed.');
-        }
-
-        return $this->respondCreated(['message' => 'Transaction successful.']);
     }
 
-    /**
-     * Check authorization.
-     *
-     * @return bool
-     */
-    private function checkAuthorization(): bool
-    {
-        $client = \Config\Services::curlrequest();
-        $response = $client->request('GET', 'https://util.devi.tools/api/v2/authorize');
-
-        return $response->getStatusCode() === 200;
-    }
-
-    /**
-     * Send notification.
-     *
-     * @param int $userId The ID of the user to send the notification to.
-     * @param string $message The content of the notification.
-     * @return void
-     */
-    private function sendNotification(int $userId, string $message): void
-    {
-        $client = \Config\Services::curlrequest();
-        $data = [
-            'user_id' => $userId,
-            'message' => $message,
-        ];
-        $client->request('POST', 'https://util.devi.tools/api/v1/notify', [
-            'json' => $data,
-        ]);
-    }
 }

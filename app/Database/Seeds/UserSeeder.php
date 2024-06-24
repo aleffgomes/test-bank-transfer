@@ -4,7 +4,7 @@ namespace App\Database\Seeds;
 
 use CodeIgniter\Database\Seeder;
 
-class UsersSeeder extends Seeder
+class UserSeeder extends Seeder
 {
     public function run()
     {
@@ -16,7 +16,7 @@ class UsersSeeder extends Seeder
                 'name' => $faker->name,
                 'email' => $faker->unique()->safeEmail,
                 'password' => password_hash('password123', PASSWORD_DEFAULT),
-                'cpf_cnpj' => $faker->cpf,
+                'cpf_cnpj' => '1234567' . $faker->randomNumber(4, true),
                 'user_type_id' => 1,
             ];
         }
@@ -26,11 +26,12 @@ class UsersSeeder extends Seeder
                 'name' => $faker->company,
                 'email' => $faker->unique()->companyEmail,
                 'password' => password_hash('password123', PASSWORD_DEFAULT),
-                'cpf_cnpj' => $faker->cnpj,
+                'cpf_cnpj' => '1234567' . $faker->randomNumber(7, true),
                 'user_type_id' => 2, 
             ];
         }
 
+        if ($this->db->table('users')->countAll() > 0) return;
         $this->db->table('users')->insertBatch($users);
     }
 }

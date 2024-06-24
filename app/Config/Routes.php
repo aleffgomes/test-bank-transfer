@@ -13,5 +13,6 @@ use CodeIgniter\Router\RouteCollection;
   */
 
   $routes->get('/ping', 'PingController::ping');
-  $routes->get('/', 'PingController::ping');
   $routes->post('/transfer', 'TransferController::transfer');
+  $routes->get('/docs', 'DocsController::docs');
+  $routes->get('/docs-json', 'DocsController::docs-json');

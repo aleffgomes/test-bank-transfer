@@ -3,30 +3,76 @@
 namespace Config;
 
 use CodeIgniter\Config\BaseService;
+use App\Services\AuthorizationService;
+use App\Services\NotificationService;
+use App\Services\TransferService;
+use App\Interfaces\Services\AuthorizationServiceInterface;
+use App\Interfaces\Services\NotificationServiceInterface;
+use App\Interfaces\Services\TransferServiceInterface;
+use App\Interfaces\Models\UserModelInterface;
+use App\Interfaces\Models\WalletModelInterface;
+use App\Interfaces\Models\TransactionModelInterface;
+use App\Interfaces\Models\TransactionStatusModelInterface;
+use App\Models\UserModel;
+use App\Models\WalletModel;
+use App\Models\TransactionModel;
+use App\Models\TransactionStatusModel;
 
-/**
- * Services Configuration file.
- *
- * Services are simply other classes/libraries that the system uses
- * to do its job. This is used by CodeIgniter to allow the core of the
- * framework to be swapped out easily without affecting the usage within
- * the rest of your application.
- *
- * This file holds any application-specific services, or service overrides
- * that you might need. An example has been included with the general
- * method format you should use for your service methods. For more examples,
- * see the core Services file at system/Config/Services.php.
- */
 class Services extends BaseService
 {
-    /*
-     * public static function example($getShared = true)
-     * {
-     *     if ($getShared) {
-     *         return static::getSharedInstance('example');
-     *     }
-     *
-     *     return new \CodeIgniter\Example();
-     * }
-     */
+    public static function authorizationService($getShared = true): AuthorizationServiceInterface
+    {
+        if ($getShared) return static::getSharedInstance('authorizationService');
+
+        return new AuthorizationService(\Config\Services::curlrequest());
+    }
+
+    public static function notificationService($getShared = true): NotificationServiceInterface
+    {
+        if ($getShared) return static::getSharedInstance('notificationService');
+
+        return new NotificationService(\Config\Services::curlrequest());
+    }
+
+    public static function transferService($getShared = true): TransferServiceInterface
+    {
+        if ($getShared) return static::getSharedInstance('transferService');
+
+        return new TransferService(
+            static::userModel(),
+            static::walletModel(),
+            static::transactionModel(),
+            static::transactionStatusModel(),
+            static::authorizationService(),
+            static::notificationService()
+        );
+    }
+
+    public static function userModel($getShared = true): UserModelInterface
+    {
+        if ($getShared) return static::getSharedInstance('userModel');
+
+        return new UserModel();
+    }
+
+    public static function walletModel($getShared = true): WalletModelInterface
+    {
+        if ($getShared) return static::getSharedInstance('walletModel');
+
+        return new WalletModel();
+    }
+
+    public static function transactionModel($getShared = true): TransactionModelInterface
+    {
+        if ($getShared) return static::getSharedInstance('transactionModel');
+
+        return new TransactionModel();
+    }
+
+    public static function transactionStatusModel($getShared = true): TransactionStatusModelInterface
+    {
+        if ($getShared) return static::getSharedInstance('transactionStatusModel');
+
+        return new TransactionStatusModel();
+    }
 }

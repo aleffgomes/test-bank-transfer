@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Interfaces\Models\WalletModelInterface;
 
-class WalletModel extends Model
+class WalletModel extends Model implements WalletModelInterface
 {
     protected $table = 'wallets';
     protected $primaryKey = 'id_wallet';
@@ -52,29 +53,23 @@ class WalletModel extends Model
     }
 
     /**
-     * Update the balance of a payer's wallet.
+     * Update the balances of the wallets of the given payer and payee.
      *
-     * @param array $wallet The wallet data.
-     * @param float $amount The amount to deduct from the balance.
-     * @return void
-     */
-    public function updatePayerWalletBalance(array $wallet, float $amount): void
-    {
-        $wallet['balance'] -= $amount;
-        $this->save($wallet);
-    }
-
-    /**
-     * Update the balance of a payee's wallet.
-     *
+     * @param int $payerId The ID of the payer.
      * @param int $payeeId The ID of the payee.
-     * @param float $amount The amount to add to the balance.
-     * @return void
+     * @param float $amount The amount to update the balances by.
+     * @return bool Whether the update was successful.
      */
-    public function updatePayeeWalletBalance(int $payeeId, float $amount): void
+    public function updateWalletBalances(int $payerId, int $payeeId, float $amount): bool
     {
-        $wallet = $this->where('user_id', $payeeId)->first();
-        $wallet['balance'] += $amount;
-        $this->save($wallet);
+        $this->where('user_id', $payerId)
+            ->set('balance', 'balance - ' . $amount, false)
+            ->update();
+            
+        $this->where('user_id', $payeeId)
+            ->set('balance', 'balance + ' . $amount, false)
+            ->update();
+
+        return true;
     }
 }

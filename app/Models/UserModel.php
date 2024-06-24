@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Interfaces\Models\UserModelInterface;
 
-class UserModel extends Model
+class UserModel extends Model implements UserModelInterface
 {
     protected $table = 'users';
     protected $primaryKey = 'id_user';

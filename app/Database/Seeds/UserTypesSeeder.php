@@ -13,6 +13,7 @@ class UserTypesSeeder extends Seeder
             ['type_name' => 'merchant']
         ];
 
+        if ($this->db->table('user_types')->countAll() > 0) return;
         $this->db->table('user_types')->insertBatch($data);
     }
 }
