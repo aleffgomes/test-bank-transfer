@@ -52,12 +52,11 @@
         <!-- Directory containing the front controller (index.php) -->
         <const name="PUBLICPATH" value="./public/"/>
         <!-- Database configuration -->
-        <env name="database.tests.hostname" value="mysql_local"/>
+        <!-- <env name="database.tests.hostname" value="mysql_local"/>
         <env name="database.tests.database" value="tests"/>
         <env name="database.tests.username" value="root"/>
         <env name="database.tests.password" value="password"/>
         <env name="database.tests.DBDriver" value="MySQLi"/>
-        <env name="database.tests.DBPrefix" value="tests_"/>
-           
+        <env name="database.tests.DBPrefix" value="tests_"/> -->
     </php>
 </phpunit>

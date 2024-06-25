@@ -35,6 +35,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'cors'          => \App\Filters\CorsFilter::class,
+        'checkauth'     => \App\Filters\CheckAuth::class,
     ];
 
     /**
@@ -70,10 +71,10 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'cors' => ['except' => '']
+            'cors' => ['except' => ''],
+            'checkauth' => ['except' => ['/ping', '/docs']]
         ],
         'after' => [
-            'cors' => ['except' => '']
         ],
     ];    
 

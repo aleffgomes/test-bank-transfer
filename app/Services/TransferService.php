@@ -3,13 +3,11 @@
 namespace App\Services;
 
 use App\Interfaces\Services\TransferServiceInterface;
-use App\Interfaces\Services\AuthorizationServiceInterface;
 use App\Interfaces\Services\NotificationServiceInterface;
 use App\Interfaces\Models\UserModelInterface;
 use App\Interfaces\Models\WalletModelInterface;
 use App\Interfaces\Models\TransactionModelInterface;
 use App\Interfaces\Models\TransactionStatusModelInterface;
-use Exception;
 
 class TransferService implements TransferServiceInterface
 {
@@ -23,31 +21,26 @@ class TransferService implements TransferServiceInterface
     protected $walletModel;
     protected $transactionModel;
     protected $transactionStatusModel;
-    protected $authorizationService;
     protected $notificationService;
+
+    protected $db;
 
     public function __construct(
         UserModelInterface $userModel,
         WalletModelInterface $walletModel,
         TransactionModelInterface $transactionModel,
         TransactionStatusModelInterface $transactionStatusModel,
-        AuthorizationServiceInterface $authorizationService,
-        NotificationServiceInterface $notificationService
+        NotificationServiceInterface $notificationService,
     ) {
         $this->userModel = $userModel;
         $this->walletModel = $walletModel;
         $this->transactionModel = $transactionModel;
         $this->transactionStatusModel = $transactionStatusModel;
-        $this->authorizationService = $authorizationService;
         $this->notificationService = $notificationService;
     }
 
     public function transfer(int $payerId, int $payeeId, float $amount): array
     {
-        if(!$this->authorizationService->checkAuthorization()) {
-            return ['error' => 'Authorization failed.', 'code' => 401];
-        }
-
         $payer = $this->userModel->getUserById($payerId);
         $payee = $this->userModel->getUserById($payeeId);
 
@@ -56,6 +49,8 @@ class TransferService implements TransferServiceInterface
         if ($payerId == $payeeId) return ['error' => 'You cannot send money to yourself.', 'code' => 403];
 
         $payerWallet = $this->walletModel->getPayerWallet($payerId);
+
+        if (!$payerWallet) return ['error' => 'Payer Wallet not found.', 'code' => 404];
         
         if ($payer['type_name'] == self::TYPE_MERCHANT) {
             return ['error' => 'Merchants cannot send money.', 'code' => 403];
@@ -67,9 +62,6 @@ class TransferService implements TransferServiceInterface
                 'code' => 403
             ];
         }
-
-        $db = \Config\Database::connect();
-        $db->transStart();
 
         $statusId = $this->transactionStatusModel->getStatusId(self::STATUS_PENDING);
         $transactionId = $this->transactionModel->saveTransaction($payerId, $payeeId, $amount, $statusId);
@@ -97,11 +89,6 @@ class TransferService implements TransferServiceInterface
             ]);
         }
 
-        $db->transComplete();
-
-        if (!$db->transStatus()) return ['error' => 'Transaction failed.', 'code' => 500];
-
         return ['message' => "Transaction successful. Transaction ID: $transactionId", 'code' => 200];
-
     }
 }

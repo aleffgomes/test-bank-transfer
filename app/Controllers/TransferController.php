@@ -17,9 +17,6 @@ use OpenApi\Attributes as OA;
 
 class TransferController extends ResourceController
 {
-    protected $modelName = 'App\Models\TransactionModel';
-    protected $format    = 'json';
-
     protected $transferService;
 
     public function __construct()
@@ -60,11 +57,20 @@ class TransferController extends ResourceController
         $amount = $requestData['amount'];
 
         try {
+            $db = \Config\Database::connect();
+            $db->transStart();
+
             $result = $this->transferService->transfer($payerId, $payeeId, $amount);
 
-            return $this->respond(['messages' => $result, 'status' => $result['code']], $result['code']);
+            $db->transComplete();
+
+            if (!$db->transStatus()) {
+                return $this->fail($db->error()['message'], $db->error()['code']);
+            }
+
+            return $this->respond($result, $result['code']);
         } catch (Exception $e) {
-            return $this->fail($e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine());
+            return $this->fail($e->getMessage(), $e->getCode());
         }
     }
 

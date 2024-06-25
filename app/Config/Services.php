@@ -43,7 +43,6 @@ class Services extends BaseService
             static::walletModel(),
             static::transactionModel(),
             static::transactionStatusModel(),
-            static::authorizationService(),
             static::notificationService()
         );
     }
