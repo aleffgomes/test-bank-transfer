@@ -8,6 +8,7 @@ use Predis\Client;
 class NotificationService implements NotificationServiceInterface
 {
     const QUEUE_NAME = 'notification_queue';
+    const MAX_ATTEMPTS = 5;
     protected $client;
     protected $redis;
 
@@ -34,7 +35,7 @@ class NotificationService implements NotificationServiceInterface
                 'json' => $data,
             ]);
 
-            return $response->getStatusCode() === 200;
+            return $response->getStatusCode() === 204;
         } catch (\Exception $e) {
             if ($addToQueue) $this->addToQueue($data);
             return false;
@@ -50,17 +51,28 @@ class NotificationService implements NotificationServiceInterface
 
     public function retryFailedNotifications(): void
     {
+        $try = 0;
         $notification = $this->redis->lpop(self::QUEUE_NAME);
-
+    
         while ($notification) {
+            if ($try >= self::MAX_ATTEMPTS) return;
+
+            $try++;
+
             $data = json_decode($notification, true);
-
+    
             if (!$this->sendNotification($data['user_id'], $data['message'], false)) {
-                $data['attempts'] += 1;
+                $data['attempts'] = isset($data['attempts']) ? $data['attempts'] + 1 : 1;
                 $this->redis->rpush(self::QUEUE_NAME, json_encode($data));
+                echo 'Failed to send notification, re-queued.' . PHP_EOL;
+            } else {
+                $this->redis->ltrim(self::QUEUE_NAME, -1, 0);
+                echo 'Notification sent.' . PHP_EOL;
             }
-
+    
             $notification = $this->redis->lpop(self::QUEUE_NAME);
         }
     }
+    
+    
 }

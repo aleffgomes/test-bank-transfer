@@ -274,3 +274,18 @@ Database/Seeds/
 
 - UsersSeeder.php: Popula a tabela de usuários com dados de exemplo.
 - WalletsSeeder.php: Popula a tabela de carteiras com dados de exemplo.
+
+## Commands
+
+### Objetivo
+
+Criar comandos para serem executados via CLI.
+
+### Exemplo de Estrutura
+
+Commands/
+
+- ProcessNotificationQueue.php: É um exemplo de como processar uma fila de notificações mal sucedidas armazenadas no Redis. Este comando pode ser configurado para ser executado periodicamente, por exemplo, através de um cron job.
+
+
+

@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
+use Config\Services;
 
 class ProcessNotificationQueue extends BaseCommand
 {
@@ -13,7 +14,7 @@ class ProcessNotificationQueue extends BaseCommand
 
     public function run(array $params)
     {
-        $notificationService = service('notificationService');
+        $notificationService = \Config\Services::notificationService();
         $notificationService->retryFailedNotifications();
 
         CLI::write('Notification queue processed.', 'green');
