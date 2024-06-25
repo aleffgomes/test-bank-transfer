@@ -27,10 +27,12 @@ Este projeto é um sistema de transferência de dinheiro entre usuários. Ele ut
 
 2. Configure o ambiente:
 
-    Renomeie o arquivo .env.example para .env e ajuste as configurações conforme necessário.
+    Copie o arquivo ``.env.example`` para ``.env`` e ajuste as configurações conforme necessário.
+
+2. Instale as dependências:
 
     ```bash
-    mv .env.example .env
+    composer install
     ```
 
 ## Uso
@@ -40,7 +42,7 @@ Este projeto é um sistema de transferência de dinheiro entre usuários. Ele ut
 Para iniciar os contêineres Docker, execute:
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
 Isso iniciará os seguintes serviços:
@@ -49,9 +51,19 @@ Isso iniciará os seguintes serviços:
 - Aplicação na porta 80
 - Redis na porta 6379
 
+### Habilite a permissão para gravação
+
+```bash
+docker exec -it APP bash
+```
+
+```bash
+chmod -R 777 /var/www/html/writable 
+```
+
 ### Migrações e Seeds
 
-Para executar as migrações do banco de dados e popular o banco de dados com dados iniciais, entre no contêiner da aplicação:
+Para executar as migrações do banco de dados e popular o banco de dados com dados iniciais, caso tenha saído do contêiner entre novamente:
 
 ```bash
 docker exec -it APP bash
@@ -74,7 +86,7 @@ O Redis já estará rodando como parte do ambiente Docker. Certifique-se de que 
 
 ## Executando os Testes
 
-Para executar os testes unitários, use o seguinte comando:
+Para executar os testes unitários, use o seguinte comando na raiz do projeto:
 
 ```bash
 vendor/bin/phpunit
@@ -82,7 +94,7 @@ vendor/bin/phpunit
 
 ## Documentação
 
-Para gerar a documentação atual usando o swagger (openapi) execute na raiz do projeto:
+Caso precise gerar uma documentação atual usando o swagger (openapi) execute o seguinte comando na raiz do projeto (não é necessário):
 
 ```bash
 ./vendor/bin/openapi app -o public/openapi.json
@@ -91,6 +103,12 @@ Para gerar a documentação atual usando o swagger (openapi) execute na raiz do 
 Acesse a documentação Swagger:
 
 Abra o navegador e acesse <http://localhost/docs> para visualizar a documentação da API.
+
+***
+
+## API
+
+O endpoint disponível para transferência, estará disponível no endpoint <http://localhost/transfer> e requer um corpo com os dados necessários, para verificar consulte <http://localhost/docs>.
 
 ***
 
