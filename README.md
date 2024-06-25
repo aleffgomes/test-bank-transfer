@@ -40,16 +40,14 @@ Este projeto é um sistema de transferência de dinheiro entre usuários. Ele ut
 Para iniciar os contêineres Docker, execute:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Isso iniciará os seguintes serviços:
 
 - MySQL na porta 3306
-- Aplicação na porta 80 <http://localhost>
+- Aplicação na porta 80
 - Redis na porta 6379
-
-É possível testar a API em <http://localhost/ping>
 
 ### Migrações e Seeds
 
@@ -69,6 +67,10 @@ php spark db:seed DatabaseSeeder
 ### Redis
 
 O Redis já estará rodando como parte do ambiente Docker. Certifique-se de que a configuração no arquivo .env aponta para o host e porta corretos (redis e 6379)
+
+### Link de teste da API
+
+É possível testar a API em <http://localhost/ping>
 
 ## Executando os Testes
 
