@@ -41,7 +41,7 @@ COPY . .
 
 # Permissions
 RUN chown -R www-data:www-data /var/www/html/writable \
-    && chmod -R 775 /var/www/html/writable
+    && chmod -R 777 /var/www/html/writable 
 
 EXPOSE 80
 EXPOSE 8080
