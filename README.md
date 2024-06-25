@@ -36,8 +36,12 @@ Este projeto é um sistema de transferência de dinheiro entre usuários. Ele ut
     - MySQL na porta 3306
     - Aplicação na porta 80
     - Redis na porta 6379
+  
+3. Na Raiz do projeto, configure o ``.env``:
 
-3. Acesse o container e instale as dependências:
+    Copie o arquivo ``.env.example`` para ``.env`` e ajuste as configurações conforme necessário.
+
+4. Acesse o container e instale as dependências:
 
     ```bash
     docker exec -it APP bash
@@ -47,15 +51,11 @@ Este projeto é um sistema de transferência de dinheiro entre usuários. Ele ut
     composer install
     ```
 
-4. Ainda no container, habilite a permissão para gravação de logs e cache
+5. Ainda no container, habilite a permissão para gravação de logs e cache
 
     ```bash
     chmod -R 777 /var/www/html/writable 
     ```
-
-5. Configure o ambiente:
-
-    Copie o arquivo ``.env.example`` para ``.env`` e ajuste as configurações conforme necessário.
 
 6. Ainda no container, execute os seguintes comandos para criação do banco de dados e das seeds com dados fictícios:
 
