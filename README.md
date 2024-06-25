@@ -41,6 +41,9 @@ Este projeto é um sistema de transferência de dinheiro entre usuários. Ele ut
 
     ```bash
     docker exec -it APP bash
+    ```
+
+    ```bash
     composer install
     ```
 
@@ -50,16 +53,16 @@ Este projeto é um sistema de transferência de dinheiro entre usuários. Ele ut
     chmod -R 777 /var/www/html/writable 
     ```
 
-5. Ainda no container, execute os seguintes comandos para criação do banco de dados e das seeds com dados fictícios:
+5. Configure o ambiente:
+
+    Copie o arquivo ``.env.example`` para ``.env`` e ajuste as configurações conforme necessário.
+
+6. Ainda no container, execute os seguintes comandos para criação do banco de dados e das seeds com dados fictícios:
 
     ```bash
     php spark migrate
     php spark db:seed DatabaseSeeder
     ```
-
-6. Configure o ambiente:
-
-    Copie o arquivo ``.env.example`` para ``.env`` e ajuste as configurações conforme necessário.
 
 ### Redis
 
