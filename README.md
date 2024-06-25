@@ -25,90 +25,61 @@ Este projeto é um sistema de transferência de dinheiro entre usuários. Ele ut
    cd test-bank-transfer
    ```
 
-2. Configure o ambiente:
-
-    Copie o arquivo ``.env.example`` para ``.env`` e ajuste as configurações conforme necessário.
-
-2. Instale as dependências:
+2. Para iniciar os containeres Docker, execute:
 
     ```bash
+    docker compose up -d --build
+    ```
+
+    Isso iniciará os seguintes serviços:
+
+    - MySQL na porta 3306
+    - Aplicação na porta 80
+    - Redis na porta 6379
+
+3. Acesse o container e instale as dependências:
+
+    ```bash
+    docker exec -it APP bash
     composer install
     ```
 
-## Uso
+4. Ainda no container, habilite a permissão para gravação de logs e cache
 
-### Inicializando o Docker
+    ```bash
+    chmod -R 777 /var/www/html/writable 
+    ```
 
-Para iniciar os contêineres Docker, execute:
+5. Ainda no container, execute os seguintes comandos para criação do banco de dados e das seeds com dados fictícios:
 
-```bash
-docker compose up -d --build
-```
+    ```bash
+    php spark migrate
+    php spark db:seed DatabaseSeeder
+    ```
 
-Isso iniciará os seguintes serviços:
+6. Configure o ambiente:
 
-- MySQL na porta 3306
-- Aplicação na porta 80
-- Redis na porta 6379
-
-### Habilite a permissão para gravação
-
-```bash
-docker exec -it APP bash
-```
-
-```bash
-chmod -R 777 /var/www/html/writable 
-```
-
-### Migrações e Seeds
-
-Para executar as migrações do banco de dados e popular o banco de dados com dados iniciais, caso tenha saído do contêiner entre novamente:
-
-```bash
-docker exec -it APP bash
-```
-
-Dentro do contêiner, execute:
-
-```bash
-php spark migrate
-php spark db:seed DatabaseSeeder
-```
+    Copie o arquivo ``.env.example`` para ``.env`` e ajuste as configurações conforme necessário.
 
 ### Redis
 
-O Redis já estará rodando como parte do ambiente Docker. Certifique-se de que a configuração no arquivo .env aponta para o host e porta corretos (redis e 6379)
+O Redis já estará rodando como parte do ambiente Docker. Certifique-se de que a configuração no arquivo .env aponta para o host e porta corretos
 
 ### Link de teste da API
 
-É possível testar a API em <http://localhost/ping>
+É possível testar a aplicação em <http://localhost/ping>
 
 ## Executando os Testes
 
-Para executar os testes unitários, use o seguinte comando na raiz do projeto:
+- Para executar os testes unitários, use o seguinte comando na raiz do projeto ou no container:
 
-```bash
-vendor/bin/phpunit
-```
-
-## Documentação
-
-Caso precise gerar uma documentação atual usando o swagger (openapi) execute o seguinte comando na raiz do projeto (não é necessário):
-
-```bash
-./vendor/bin/openapi app -o public/openapi.json
-```
-
-Acesse a documentação Swagger:
-
-Abra o navegador e acesse <http://localhost/docs> para visualizar a documentação da API.
-
-***
+    ```bash
+    vendor/bin/phpunit
+    ```
 
 ## API
 
-O endpoint disponível para transferência, estará disponível no endpoint <http://localhost/transfer> e requer um corpo com os dados necessários, para verificar consulte <http://localhost/docs>.
+O endpoint disponível para transferência, estará disponível no link <http://localhost/transfer> e requer um corpo com os dados necessários, para verificar consulte <http://localhost/docs>.
 
 ***
 
@@ -130,11 +101,8 @@ project-root/
 │   ├── Controllers/
 │   ├── Database/
 │   ├── Filters/
-│   ├── Helpers/
-│   ├── Libraries/
 │   ├── Models/
 │   ├── Services/
-│   ├── ThirdParty/
 │   └── Views/
 │
 ├── public/
@@ -164,11 +132,8 @@ Config/: Configurações da aplicação.
 Controllers/: Controladores da aplicação.
 Database/: Migrations e seeds.
 Filters/: Filtros personalizados (middlewares)
-Helpers/: Funções auxiliares globais.
-Libraries/: Bibliotecas customizadas.
 Models/: Modelos de dados.
 Services/: Lógica de negócios separada dos controladores.
-ThirdParty/: Pacotes de terceiros.
 Views/: Arquivos de visualização.
 public/: Ponto de entrada da aplicação.
 
@@ -184,108 +149,51 @@ phpunit.xml: Configuração do PHPUnit.
 
 O filtro de autorização (AuthorizationFilter) é um middleware utilizado para verificar se o usuário possui permissão para acessar determinadas rotas da aplicação. Ele é aplicado antes de a requisição atingir o controlador correspondente.
 
-### Implementação
-
 O filtro é implementado na classe AuthorizationFilter localizada em App\Filters\AuthorizationFilter.php.
 Utiliza o serviço authorizationService para verificar se o usuário possui autorização.
 Retorna uma resposta não autorizada se a autorização falhar.
 
-### Registro
-
-Registrado no arquivo de configuração app\Config\Filters.php.
-O alias checkauth é associado à classe CheckAuth.
+Registrado no arquivo de configuração ``app\Config\Filters.php``.
 Configurado para ser executado antes de determinadas rotas protegidas.
 
 ## Camada de Serviços (Services)
 
-### Objetivo
+A camada de serviços encapsula a lógica de negócios da aplicação, separando-a dos controladores para promover reutilização e facilitar testes automatizados. Essa abordagem permite que a lógica de negócios seja centralizada, tornando a manutenção e a evolução do código mais eficientes.
 
-A camada de serviços encapsula a lógica de negócios da aplicação, separando-a dos controladores para promover reutilização e facilitar testes automatizados.
+Para a aplicação de serviço de transferência, implementamos um método em ``app/Config/Services.php`` que instancia as classes de serviços. A escolha de usar ``app/Config/Services.php`` para essa implementação se baseia em diversos benefícios:
 
-### Exemplo de Estrutura
+- Centralização da Configuração: Manter a configuração dos serviços em um único local facilita a gestão e a modificação das dependências da aplicação. Qualquer alteração nos serviços pode ser feita de forma centralizada, sem necessidade de alterar múltiplos arquivos.
 
-Services/
+- Injeção de Dependência: O uso de ``app/Config/Services.php`` permite uma injeção de dependência mais limpa e estruturada. Isso promove a inversão de controle (IoC), onde os serviços são definidos fora das classes que os utilizam, facilitando a troca de implementações e a criação de mocks para testes.
 
-- TransferService.php: Implementa a lógica de transferência de dinheiro entre usuários.
-- NotificationService.php: Envia notificações aos usuários.
+- Facilidade de Testes: Com os serviços centralizados em Services.php, é mais fácil substituir implementações reais por mocks ou stubs durante os testes automatizados. Isso é crucial para garantir que os testes sejam isolados e não dependam de recursos externos como bancos de dados ou serviços de terceiros.
+
+- Reutilização de Código: Ao definir os serviços em ``app/Config/Services.php``, garantimos que a mesma instância de um serviço pode ser reutilizada em diferentes partes da aplicação. Isso evita a criação de múltiplas instâncias desnecessárias e promove a consistência dos dados.
 
 ## Controllers
 
-### Objetivo
-
 Os controladores recebem requisições HTTP, interagem com os serviços e retornam respostas para o cliente.
-
-### Exemplo de Estrutura
-
-Controllers/
-
-- TransferController.php: Controla as operações de transferência de dinheiro.
 
 ## Models
 
-### Objetivo
-
 Os modelos representam e interagem com os dados do banco de dados.
-
-### Exemplo de Estrutura
-
-Models/
-
-- UserModel.php: Modelo para gerenciamento de usuários.
-- WalletModel.php: Modelo para gerenciamento de carteiras.
-- TransactionModel.php: Modelo para gerenciamento de transações.
-- TransactionStatusModel.php: Modelo para gerenciamento de status de transações.
 
 ## Interfaces
 
-### Objetivo
-
-Interfaces definem contratos que as classes devem implementar.
-
-### Exemplo de Estrutura
-
-Interfaces/
-
-- AuthorizationServiceInterface.php: Interface para serviço de autorização.
-- NotificationServiceInterface.php: Interface para serviço de notificação.
+Interfaces definem contratos que as classes devem implementar, visando desacoplar o código.
 
 ## Migrations
 
-### Objetivo
-
 As migrations são scripts PHP que criam e modificam a estrutura do banco de dados de forma controlada.
-
-### Exemplo de Estrutura
-
-Database/Migrations/
-
-- 20240101000000_create_users_table.php: Criação da tabela de usuários.
-- 20240102000000_create_wallets_table.php: Criação da tabela de carteiras.
 
 ## Seeds
 
-### Objetivo
-
 Os seeds são scripts PHP que inserem dados iniciais no banco de dados.
-
-### Exemplo de Estrutura
-
-Database/Seeds/
-
-- UsersSeeder.php: Popula a tabela de usuários com dados de exemplo.
-- WalletsSeeder.php: Popula a tabela de carteiras com dados de exemplo.
 
 ## Commands
 
-### Objetivo
-
 Criar comandos para serem executados via CLI.
 
-### Exemplo de Estrutura
-
-Commands/
+Exemplo:
 
 - ProcessNotificationQueue.php: É um exemplo de como processar uma fila de notificações mal sucedidas armazenadas no Redis. Este comando pode ser configurado para ser executado periodicamente, por exemplo, através de um cron job.
-
-
-
