@@ -1,7 +1,5 @@
 FROM php:8.1.2-apache
 
-USER root
-
 ENV CFLAGS="$CFLAGS -D_GNU_SOURCE"
 
 # PHP extensions/dependencies
@@ -41,12 +39,8 @@ WORKDIR /var/www/html
 
 COPY . .
 
-USER root
-
 # Composer install
 RUN  composer install
-
-COPY /vendor /var/www/html/vendor
 
 EXPOSE 80
 EXPOSE 8080
