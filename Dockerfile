@@ -1,5 +1,7 @@
 FROM php:8.1.2-apache
 
+USER root
+
 ENV CFLAGS="$CFLAGS -D_GNU_SOURCE"
 
 # PHP extensions/dependencies
@@ -39,9 +41,12 @@ WORKDIR /var/www/html
 
 COPY . .
 
-# Permissions
-RUN chown -R www-data:www-data /var/www/html/writable \
-    && chmod -R 777 /var/www/html/writable 
+USER root
+
+# Composer install
+RUN  composer install
+
+COPY /vendor /var/www/html/vendor
 
 EXPOSE 80
 EXPOSE 8080

@@ -39,7 +39,9 @@ Este projeto é um sistema de transferência de dinheiro entre usuários. Ele ut
   
 3. Na Raiz do projeto, configure o ``.env``:
 
-    Copie o arquivo ``.env.example`` para ``.env`` e ajuste as configurações conforme necessário.
+    ```bash
+    cp .env.example .env
+    ```
 
 4. Acesse o container e instale as dependências:
 
